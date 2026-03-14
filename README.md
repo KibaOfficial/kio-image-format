@@ -14,6 +14,7 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Version](https://img.shields.io/badge/version-2.1.0-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
+![CSharp](https://img.shields.io/badge/C%23-.NET%2010-purple.svg)
 
 </div>
 
@@ -21,50 +22,24 @@
 
 ## What is KIF?
 
-KIF (Kio Image Format) is a custom binary image format built from scratch.
-It comes in two versions:
+KIF (Kio Image Format) is a custom binary image format built from scratch as a learning project to understand how image formats like PNG and JPEG actually work at the binary level: signatures, headers, chunk systems, pixel encoding, and compression.
+
+The format comes in two versions:
 
 - **KIF v1** — fixed 12-byte header, raw pixel data, simple and fast
-- **KIF v2** — chunk-based extensible format with CRC32 validation, optional metadata, and future-proof design
+- **KIF v2** — chunk-based extensible format with CRC32 validation and optional metadata
 
 Both share the same 8-byte file signature and support RGB, RGBA, Grayscale, and RLE compression.
 
-It was designed as a learning project to understand how image formats like PNG and JPEG
-actually work at the binary level: signatures, headers, chunk systems, pixel encoding, and compression.
+> **Status:** The Python implementation (v1/v2) is feature-complete and no longer actively developed. Active development continues in C# targeting a redesigned KIF v3.
 
 ---
 
 ## File Structure
 
-Every `.kif` file follows this exact layout:
-
-```
-[Signature]   8 bytes
-[Header]     12 bytes   ← KIF v1
-[ImageData]  variable
-```
-
-### KIF v2 File Structure
-
-KIF v2 uses a chunk-based layout — extensible and CRC-validated:
-
-```
-[Signature]   8 bytes
-[HEAD chunk]  type + length + data + crc32
-[META chunk]  optional — key=value metadata
-[DATA chunk]  type + length + pixel data + crc32
-[END  chunk]  type + length + crc32
-```
-
-Each chunk follows this layout:
-```
-[type]    4 bytes  ASCII (e.g. "HEAD", "DATA")
-[length]  4 bytes  uint32 big-endian
-[data]    variable
-[crc32]   4 bytes  CRC32 over type + data
-```
-
 ### Signature
+
+Every `.kif` file starts with the same 8-byte signature:
 
 ```
 89 4B 49 46 0D 0A 1A 0A
@@ -81,45 +56,54 @@ Each chunk follows this layout:
 | 6    | `1A`  | SUB — DOS EOF marker     |
 | 7    | `0A`  | LF — Unix line ending    |
 
-The signature is designed to detect text/binary corruption and line-ending conversions —
-the same approach used by PNG.
+### KIF v1 Layout
 
-### Header
+```
+[Signature]   8 bytes
+[Header]     12 bytes
+[ImageData]  variable
+```
 
 All multi-byte integers are stored in **big-endian** byte order.
 
-| Field         | Type     | Size    | Description                        |
-|---------------|----------|---------|------------------------------------|
-| `width`       | `uint32` | 4 bytes | Image width in pixels              |
-| `height`      | `uint32` | 4 bytes | Image height in pixels             |
+| Field         | Type     | Size    | Description                             |
+|---------------|----------|---------|-----------------------------------------|
+| `width`       | `uint32` | 4 bytes | Image width in pixels                   |
+| `height`      | `uint32` | 4 bytes | Image height in pixels                  |
 | `channels`    | `uint8`  | 1 byte  | `1` = Grayscale, `3` = RGB, `4` = RGBA |
-| `bit_depth`   | `uint8`  | 1 byte  | Bits per channel (currently: `8`) |
-| `compression` | `uint8`  | 1 byte  | `0` = None, `1` = RLE             |
-| `reserved`    | `uint8`  | 1 byte  | Must be `0` in KIF v1             |
+| `bit_depth`   | `uint8`  | 1 byte  | Bits per channel (currently: `8`)       |
+| `compression` | `uint8`  | 1 byte  | `0` = None, `1` = RLE                  |
+| `reserved`    | `uint8`  | 1 byte  | Must be `0` in KIF v1                  |
 
-### Image Data
+### KIF v2 Layout
 
-Pixels are stored row by row, **top to bottom, left to right**.
+KIF v2 uses a chunk-based layout — extensible and CRC-validated:
 
 ```
-RGB:  R G B R G B R G B ...
-RGBA: R G B A R G B A ...
+[Signature]   8 bytes
+[HEAD chunk]  type + length + data + crc32
+[META chunk]  optional — key=value metadata
+[DATA chunk]  type + length + pixel data + crc32
+[END  chunk]  type + length + crc32
 ```
 
-Uncompressed data size:
+Each chunk:
 ```
-width × height × channels × (bit_depth / 8)
+[type]    4 bytes  ASCII (e.g. "HEAD", "DATA")
+[length]  4 bytes  uint32 big-endian
+[data]    variable
+[crc32]   4 bytes  CRC32 over type + data
 ```
 
 ---
 
 ## Download
 
-Pre-built binaries are available on the [Releases page](https://github.com/KibaOfficial/kio-image-format/releases/latest).
+Pre-built binaries (Python-based, v1/v2) are available on the [Releases page](https://github.com/KibaOfficial/kio-image-format/releases/latest).
 
 | File                    | Platform        | Description                          |
 |-------------------------|-----------------|--------------------------------------|
-| `kif-2.0.0-setup.exe`  | Windows x64     | Installer — adds KIF to PATH         |
+| `kif-2.1.0-setup.exe`  | Windows x64     | Installer — adds KIF to PATH         |
 | `kif.exe`               | Windows x64     | Portable — no install needed         |
 | `kif-linux-x86_64`      | Linux x64       | Portable — no install needed         |
 
@@ -127,7 +111,11 @@ Pre-built binaries are available on the [Releases page](https://github.com/KibaO
 
 ---
 
-## Installation from source
+## Python Implementation (v1/v2) — archived
+
+> ⚠️ The Python implementation is **feature-complete and no longer actively developed**. It serves as the reference implementation for KIF v1 and v2.
+
+### Installation from source
 
 ```bash
 git clone https://github.com/kibaofficial/kio-image-format.git
@@ -137,242 +125,91 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install pillow customtkinter
 ```
 
----
+### Commands
 
-## Usage
-
-All commands are run via `src/main.py`.
-
-### Encode
-
-Convert any image to KIF:
+All commands are run via `python/main.py`.
 
 ```bash
-python src/main.py encode input.png output.kif
+# encode
+python python/main.py encode input.png output.kif
+python python/main.py encode input.png output.kif -c rle -g
+
+# encode v2 (with optional metadata)
+python python/main.py encode-v2 input.png output.kif
+python python/main.py encode-v2 input.png output.kif --meta author=kiba tool=KIF
+
+# decode
+python python/main.py decode input.kif output.png
+python python/main.py decode-v2 input.kif output.png
+
+# tools
+python python/main.py info     image.kif
+python python/main.py compare  imageA.png imageB.png
+python python/main.py stats    image.kif
+python python/main.py view     image.kif
+python python/main.py test
+python python/main.py benchmark
 ```
 
-With RLE compression:
-
-```bash
-python src/main.py encode input.png output.kif --compression rle
-# or shorthand:
-python src/main.py encode input.png output.kif -c rle
-```
-
-As grayscale:
-
-```bash
-python src/main.py encode input.png output.kif --grayscale
-# or shorthand:
-python src/main.py encode input.png output.kif -g
-```
-
-Combine both:
-
-```bash
-python src/main.py encode input.png output.kif -c rle -g
-```
-
-### Decode
-
-Convert a KIF file back to an image:
-
-```bash
-python src/main.py decode input.kif output.png
-```
-
-### Convert
-
-Shorthand for encoding any supported image format to KIF:
-
-```bash
-python src/main.py convert input.jpg output.kif
-python src/main.py convert input.jpg output.kif -c rle
-```
-
-### Encode v2
-
-Encode to KIF v2 (chunk-based, CRC validated, optional metadata):
-
-```bash
-python src/main.py encode-v2 input.png output.kif
-python src/main.py encode-v2 input.png output.kif -c rle -g
-python src/main.py encode-v2 input.png output.kif --meta author=kiba tool=KIF version=2
-```
-
-### Decode v2
-
-```bash
-python src/main.py decode-v2 input.kif output.png
-```
-
-Output with metadata:
-```
-[KIF v2] decoding: image.kif
-         size:        736x1121
-         channels:    3
-         bitdepth:    8
-         compression: none
-         metadata:
-           author: kiba
-           tool: KIF
-           version: 2
-         saved to: output.png
-```
-
-> `info` auto-detects v1 vs v2 — no flags needed.
-
-Display metadata of a KIF file without decoding it:
-
-```bash
-python src/main.py info image.kif
-```
-
-Output:
-```
-KIF Image
----------
-  File:          image.kif
-  Width:         736px
-  Height:        1121px
-  Channels:      RGB
-  Bit Depth:     8
-  Compression:   RLE
-
-  Raw Size:      2.48 MB
-  File Size:     1.62 MB
-  Saved:         34.7%
-```
-
-### Compare
-
-Compare two images pixel by pixel — useful for verifying encode/decode integrity:
-
-```bash
-python src/main.py compare original.jpeg decoded.png
-```
-
-Output:
-```
-KIF Compare
------------
-  A:               original.jpeg
-  B:               decoded.png
-
-  Pixels compared: 825,056
-  Differences:     0
-  Status:          identical ✓
-```
-
-### Stats
-
-Show RLE analysis and compression efficiency of a KIF file:
-
-```bash
-python src/main.py stats image.kif
-```
-
-Output:
-```
-KIF Stats
----------
-  File:              image.kif
-  Size:              736x1121
-  Pixels:            825,056
-  Unique colors:     24,011
-
-  RLE Analysis:
-  Total runs:        404,319
-  Average run:       2.0 pixels
-  Longest run:       90 pixels
-  Shortest run:      1 pixels
-  Single px runs:    273,865 (67.7%)
-
-  RLE Efficiency:
-  Raw size:          2.48 MB
-  RLE size:          1.62 MB
-  Saved:             34.7%
-```
-
-### Test
-
-Run the full test suite for all variants (v1 + v2):
-
-```bash
-python src/main.py test
-```
-
-### Benchmark
-
-Run encode/decode speed benchmark vs PNG:
-
-```bash
-python src/main.py benchmark
-```
-
-Generates all v1 and v2 variants, runs info + stats on each, compares decoded output against the original, and prints a size summary:
-
-```
-  Variant                      File Size
-  ------------------------- ------------
-  [v1] rgb_raw                    2.48 MB
-  [v1] rgb_rle                    1.62 MB
-  [v1] gray_raw                   0.83 MB
-  [v1] gray_rle                   0.73 MB
-  [v2] v2_rgb_raw                 2.48 MB
-  [v2] v2_rgb_rle                 1.62 MB
-  [v2] v2_gray_raw                0.83 MB
-  [v2] v2_gray_rle                0.73 MB
-  [v2] v2_rgb_meta                2.48 MB
-```
-
-| Flag              | Description                                      |
-|-------------------|--------------------------------------------------|
-| `-c none`         | No compression — raw pixel data (default)        |
-| `-c rle`          | Run-Length Encoding — best for flat colors/logos |
-
-> **Note:** RLE works best on images with large uniform areas (logos, UI, pixel art).
-> For photos with lots of color variation it may not reduce file size significantly.
-
-### Benchmark
-
-Compare encode/decode speed and file size across all KIF variants vs PNG:
-
-```bash
-python src/tools/benchmark.py
-```
-
-Results on a 736×1121 JPEG (averaged over 5 runs):
+### Benchmark results (Python exe, 736×1121 JPEG, 5 runs averaged)
 
 ```
   Variant                  Encode     Decode       Size
   -------------------- ---------- ---------- ----------
-  KIF v1 raw RGB           12.8ms     55.7ms     2.48MB
-  KIF v1 RLE RGB          392.3ms    162.3ms     1.62MB
-  KIF v2 raw RGB           10.5ms     43.5ms     2.48MB
-  KIF v2 RLE RGB          289.2ms    139.6ms     1.62MB
-  PNG baseline             39.6ms     11.2ms     0.44MB
+  KIF v2 raw RGB           11.9ms     46.7ms     2.48MB
+  KIF v2 RLE RGB          303.0ms    141.4ms     1.62MB
+  PNG baseline             39.6ms     11.1ms     0.44MB
 ```
 
-> KIF v2 is faster than v1 in all categories — the chunk overhead is minimal and CRC32 runs via zlib (C implementation).
-> RLE is slower in Python due to per-pixel looping. A C/Rust implementation would be significantly faster.
+---
 
-### View
+## C# Implementation (v2/v3) — active development
 
-Open a KIF file in the built-in GUI viewer:
+The C# implementation targets KIF v2 and will be the foundation for the upcoming KIF v3 redesign.
+It supports v2 only — no v1 legacy.
+
+### Build
 
 ```bash
-python src/main.py view image.kif
+cd csharp
+dotnet build KIF.slnx
 ```
 
-- Auto-detects KIF v1 and v2
-- Dark mode GUI powered by CustomTkinter
-- Auto-scales image to fit the window
-- Info bar: filename, version, resolution, channels, bit depth, compression, file size
-- Metadata bar for v2 files with embedded metadata
-- Window title shows version and filename
+### Commands
 
-> Requires `customtkinter`: `pip install customtkinter`
+```bash
+dotnet run --project csharp/KIF.CLI -- encode input.png output.kif
+dotnet run --project csharp/KIF.CLI -- encode input.png output.kif -c rle -g
+dotnet run --project csharp/KIF.CLI -- encode input.png output.kif --meta author=kiba tool=KIF
+dotnet run --project csharp/KIF.CLI -- decode input.kif output.png
+dotnet run --project csharp/KIF.CLI -- info   input.kif
+dotnet run --project csharp/KIF.CLI -- compare imageA.png imageB.png
+dotnet run --project csharp/KIF.CLI -- stats   input.kif
+dotnet run --project csharp/KIF.CLI -- test
+dotnet run --project csharp/KIF.CLI -- benchmark
+```
+
+### Benchmark results (C# published binary, 736×1121 JPEG, 5 runs averaged)
+
+> Note: end-to-end benchmarks (JPEG load + encode + decode + PNG save), not isolated codec benchmarks.
+
+```
+  Variant                  Encode     Decode       Size
+  -------------------- ---------- ---------- ----------
+  KIF v2 raw RGB           89.7ms    123.4ms     2.48MB
+  KIF v2 RLE RGB           60.7ms    107.0ms     1.57MB
+  KIF v2 raw Gray          20.1ms     51.5ms     0.83MB
+  KIF v2 RLE Gray          25.8ms     58.6ms     0.73MB
+```
+
+### Cross-language interoperability
+
+KIF v2 files are fully interoperable between Python and C#:
+
+```
+Python encode-v2 → C# decode       ✓  identical pixels
+C# encode        → Python decode-v2 ✓  identical pixels
+```
 
 ---
 
@@ -380,30 +217,45 @@ python src/main.py view image.kif
 
 ```
 kio-image-format/
- ├── src/
+ ├── python/                    # Python reference implementation (archived)
  │    ├── core/
- │    │    ├── header.py       # Format spec, constants, pack/unpack
- │    │    ├── chunk.py        # Chunk engine with CRC32 (v2)
- │    │    └── rle.py          # RLE compression / decompression
- │    │
+ │    │    ├── header.py        # Format spec, constants, pack/unpack
+ │    │    ├── chunk.py         # Chunk engine with CRC32
+ │    │    └── rle.py           # RLE compression / decompression
  │    ├── v1/
- │    │    ├── encoder.py      # Image → KIF v1
- │    │    └── decoder.py      # KIF v1 → Image
- │    │
+ │    │    ├── encoder.py       # Image → KIF v1
+ │    │    └── decoder.py       # KIF v1 → Image
  │    ├── v2/
- │    │    ├── encoder.py      # Image → KIF v2 (chunk-based)
- │    │    └── decoder.py      # KIF v2 → Image
- │    │
+ │    │    ├── encoder.py       # Image → KIF v2
+ │    │    └── decoder.py       # KIF v2 → Image
  │    ├── tools/
- │    │    ├── converter.py    # Any image → KIF (uses v1 encoder)
- │    │    ├── info.py         # KIF metadata display (auto-detects v1/v2)
- │    │    ├── compare.py      # Pixel-by-pixel image comparison
- │    │    ├── stats.py        # RLE analysis and compression stats
- │    │    ├── test.py         # Full test suite for all variants (v1 + v2)
- │    │    ├── benchmark.py    # Encode/decode speed benchmark vs PNG
- │    │    └── viewer.py       # CustomTkinter GUI viewer
- │    │
- │    └── main.py              # CLI entry point
+ │    │    ├── converter.py     # Any image → KIF
+ │    │    ├── info.py          # Metadata display (auto-detects v1/v2)
+ │    │    ├── compare.py       # Pixel-by-pixel comparison
+ │    │    ├── stats.py         # RLE analysis
+ │    │    ├── test.py          # Full test suite
+ │    │    ├── benchmark.py     # Benchmark vs PNG
+ │    │    └── viewer.py        # CustomTkinter GUI viewer
+ │    └── main.py               # CLI entry point
+ │
+ ├── csharp/                    # C# implementation (active)
+ │    ├── KIF.Core/
+ │    │    └── Core/
+ │    │         ├── KifSignature.cs
+ │    │         ├── KifHeader.cs
+ │    │         ├── ChunkType.cs
+ │    │         ├── ChunkReader.cs
+ │    │         ├── ChunkWriter.cs
+ │    │         ├── RleCodec.cs
+ │    │         ├── KifEncoder.cs
+ │    │         └── KifDecoder.cs
+ │    ├── KIF.CLI/
+ │    │    └── Program.cs       # CLI entry point
+ │    └── KIF.slnx
+ │
+ ├── installer/
+ │    └── kif_installer.iss     # Inno Setup installer script
+ ├── kif.spec                   # PyInstaller build spec
  └── README.md
 ```
 
@@ -415,24 +267,22 @@ kio-image-format/
 
 - [x] KIF v1 — raw pixel format (RGB / RGBA, 8-bit)
 - [x] RLE compression support
-- [x] Info command (display KIF metadata without decoding)
-- [x] Pixel compare tool (regression testing)
-- [x] Grayscale support
-- [x] Stats command (RLE analysis and compression efficiency)
-- [x] Test suite (all variants, auto compare, summary)
-- [x] Benchmarks (encode/decode speed vs PNG)
-- [x] GUI Viewer (CustomTkinter, dark mode, info bar)
-- [x] KIF v2 — chunk-based extensible format with CRC32 + metadata
-- [x] KIF v2 Viewer support (auto-detect, metadata bar)
-- [x] Windows installer (Inno Setup, PATH integration)
-- [x] Linux binary
+- [x] Info, Compare, Stats, Test, Benchmark commands
+- [x] GUI Viewer (CustomTkinter, dark mode, v1/v2 auto-detect)
+- [x] KIF v2 — chunk-based format with CRC32 + metadata
+- [x] Windows installer + Linux binary
 
-### KIF v3 — C# (planned)
+### C# (v2 / v3) — active 🔧
 
-- [ ] KIF v3 spec — redesigned from lessons learned in v1/v2
-- [ ] C# implementation (NuGet: `KibaOfficial.KIF`)
-- [ ] 16-bit color depth
+- [x] KIF v2 encoder / decoder
+- [x] CRC32 chunk validation
+- [x] Metadata support
+- [x] CLI (encode, decode, info, compare, stats, test, benchmark)
+- [x] Cross-language interoperability with Python
+- [ ] KIF v3 spec — redesigned from lessons learned
+- [ ] NuGet package (`KibaOfficial.KIF`)
 - [ ] GitHub Actions (auto build + release)
+- [ ] 16-bit color depth
 - [ ] Deflate compression
 - [ ] Color profiles
 - [ ] Animation support
