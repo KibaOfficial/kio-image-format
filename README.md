@@ -12,7 +12,7 @@
 **A minimal, open, and hackable binary image format.**
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.4.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.5.0-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
 </div>
@@ -254,6 +254,29 @@ compares RGB decoded output against the original, and prints a size summary:
 > **Note:** RLE works best on images with large uniform areas (logos, UI, pixel art).
 > For photos with lots of color variation it may not reduce file size significantly.
 
+### Benchmark
+
+Compare encode/decode speed and file size across all KIF variants vs PNG:
+
+```bash
+python src/benchmark.py
+```
+
+Results on a 736×1121 JPEG (averaged over 5 runs):
+
+```
+  Variant                  Encode     Decode       Size
+  -------------------- ---------- ---------- ----------
+  KIF raw RGB              13.2ms     44.0ms     2.48MB
+  KIF RLE RGB             369.0ms    161.0ms     1.62MB
+  KIF gray raw              8.5ms     19.2ms     0.83MB
+  KIF gray RLE            260.0ms    102.0ms     0.73MB
+  PNG baseline             41.0ms     11.0ms     0.44MB
+```
+
+> KIF raw encode is the fastest of all variants — no compression overhead, just raw bytes.
+> RLE is slower in Python due to per-pixel looping. A C/Rust implementation would be significantly faster.
+
 ---
 
 ## Project Structure
@@ -270,6 +293,7 @@ kif/
  │    ├── compare.py      # Pixel-by-pixel image comparison
  │    ├── stats.py        # RLE analysis and compression stats
  │    ├── test.py         # Full test suite for all variants
+ │    ├── benchmark.py    # Encode/decode speed benchmark vs PNG
  │    └── main.py         # CLI entry point
  └── README.md
 ```
@@ -285,7 +309,7 @@ kif/
 - [x] Grayscale support
 - [x] Stats command (RLE analysis and compression efficiency)
 - [x] Test suite (all variants, auto compare, summary)
-- [ ] Benchmarks (encode/decode speed vs PNG)
+- [x] Benchmarks (encode/decode speed vs PNG)
 - [ ] 16-bit color depth
 - [ ] Metadata / EXIF chunk
 - [ ] KIF v2 — chunk-based extensible format
