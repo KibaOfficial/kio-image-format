@@ -12,7 +12,7 @@
 **A minimal, open, and hackable binary image format.**
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.1.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.2.0-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
 </div>
@@ -138,6 +138,50 @@ python src/main.py convert input.jpg output.kif
 python src/main.py convert input.jpg output.kif -c rle
 ```
 
+### Info
+
+Display metadata of a KIF file without decoding it:
+
+```bash
+python src/main.py info image.kif
+```
+
+Output:
+```
+KIF Image
+---------
+  File:          image.kif
+  Width:         736px
+  Height:        1121px
+  Channels:      RGB
+  Bit Depth:     8
+  Compression:   RLE
+
+  Raw Size:      2.48 MB
+  File Size:     1.62 MB
+  Saved:         34.7%
+```
+
+### Compare
+
+Compare two images pixel by pixel — useful for verifying encode/decode integrity:
+
+```bash
+python src/main.py compare original.jpeg decoded.png
+```
+
+Output:
+```
+KIF Compare
+-----------
+  A:               original.jpeg
+  B:               decoded.png
+
+  Pixels compared: 825,056
+  Differences:     0
+  Status:          identical ✓
+```
+
 ### Compression
 
 | Flag              | Description                                      |
@@ -148,10 +192,6 @@ python src/main.py convert input.jpg output.kif -c rle
 > **Note:** RLE works best on images with large uniform areas (logos, UI, pixel art).
 > For photos with lots of color variation it may not reduce file size significantly.
 
----
-
-## Project Structure
-
 ```
 kif/
  ├── src/
@@ -160,6 +200,8 @@ kif/
  │    ├── decoder.py      # KIF → Image
  │    ├── converter.py    # Any image → KIF (uses encoder internally)
  │    ├── rle.py          # RLE compression / decompression
+ │    ├── info.py         # KIF metadata display
+ │    ├── compare.py      # Pixel-by-pixel image comparison
  │    └── main.py         # CLI entry point
  └── README.md
 ```
@@ -170,9 +212,10 @@ kif/
 
 - [x] KIF v1 — raw pixel format (RGB / RGBA, 8-bit)
 - [x] RLE compression support
-- [ ] Info command (display KIF metadata without decoding)
-- [ ] 16-bit color depth
+- [x] Info command (display KIF metadata without decoding)
+- [x] Pixel compare tool (regression testing)
 - [ ] Grayscale support
+- [ ] 16-bit color depth
 - [ ] Metadata / EXIF chunk
 - [ ] KIF v2 — chunk-based extensible format
 - [ ] C / Rust decoder for performance

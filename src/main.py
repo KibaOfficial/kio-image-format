@@ -7,6 +7,8 @@ import argparse
 from encoder import encode
 from decoder import decode
 from converter import convert
+from info import info
+from compare import compare
 from header import Compression
 
 
@@ -45,6 +47,15 @@ def main():
         help="compression method (default: none)"
     )
 
+    # info command
+    info_parser = subparsers.add_parser("info", help="display KIF file metadata")
+    info_parser.add_argument("input", help="input KIF path (e.g. image.kif)")
+
+    # compare command
+    compare_parser = subparsers.add_parser("compare", help="compare two images pixel by pixel")
+    compare_parser.add_argument("a", help="first image path")
+    compare_parser.add_argument("b", help="second image path")
+
     args = parser.parse_args()
 
     if args.command == "encode":
@@ -55,6 +66,10 @@ def main():
     elif args.command == "convert":
         c = Compression.RLE if args.compression == "rle" else Compression.NONE
         convert(args.input, args.output, c)
+    elif args.command == "info":
+        info(args.input)
+    elif args.command == "compare":
+        compare(args.a, args.b)
 
 
 if __name__ == "__main__":
