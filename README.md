@@ -411,6 +411,8 @@ kio-image-format/
 
 ## Roadmap
 
+### Python (v1 / v2) — complete ✅
+
 - [x] KIF v1 — raw pixel format (RGB / RGBA, 8-bit)
 - [x] RLE compression support
 - [x] Info command (display KIF metadata without decoding)
@@ -424,9 +426,16 @@ kio-image-format/
 - [x] KIF v2 Viewer support (auto-detect, metadata bar)
 - [x] Windows installer (Inno Setup, PATH integration)
 - [x] Linux binary
-- [ ] GitHub Actions (auto build + release)
+
+### KIF v3 — C# (planned)
+
+- [ ] KIF v3 spec — redesigned from lessons learned in v1/v2
+- [ ] C# implementation (NuGet: `KibaOfficial.KIF`)
 - [ ] 16-bit color depth
-- [ ] C / Rust decoder for performance
+- [ ] GitHub Actions (auto build + release)
+- [ ] Deflate compression
+- [ ] Color profiles
+- [ ] Animation support
 
 ---
 
