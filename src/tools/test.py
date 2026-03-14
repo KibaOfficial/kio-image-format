@@ -6,9 +6,9 @@
 import os
 import sys
 from v1.encoder import encode
-from v2.encoder import encode_v2
+from v2.encoder import encode as encode_v2
 from v1.decoder import decode
-from v2.decoder import decode_v2
+from v2.decoder import decode as decode_v2
 from tools.info import info
 from tools.stats import stats
 from tools.compare import compare

@@ -36,7 +36,7 @@ def unpack_meta(data: bytes) -> dict:
 # DECODER
 # ============================================================
 
-def decode_v2(input_path: str, output_path: str):
+def decode(input_path: str, output_path: str):
     with open(input_path, "rb") as f:
         # validate signature
         sig = f.read(8)
