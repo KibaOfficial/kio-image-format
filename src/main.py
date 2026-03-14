@@ -103,6 +103,12 @@ def main():
     view_parser = subparsers.add_parser("view", help="open a KIF file in the viewer")
     view_parser.add_argument("input", help="input KIF path (e.g. image.kif)")
 
+    # test command
+    subparsers.add_parser("test", help="run full test suite for all variants")
+
+    # benchmark command
+    subparsers.add_parser("benchmark", help="run encode/decode benchmark vs PNG")
+
     args = parser.parse_args()
 
     if args.command == "encode":
@@ -132,6 +138,12 @@ def main():
     elif args.command == "view":
         from tools.viewer import view
         view(args.input)
+    elif args.command == "test":
+        from tools.test import main as run_test
+        run_test()
+    elif args.command == "benchmark":
+        from tools.benchmark import main as run_benchmark
+        run_benchmark()
 
 if __name__ == "__main__":
     main()
