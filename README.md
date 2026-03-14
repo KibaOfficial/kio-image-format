@@ -113,7 +113,21 @@ width × height × channels × (bit_depth / 8)
 
 ---
 
-## Installation
+## Download
+
+Pre-built binaries are available on the [Releases page](https://github.com/KibaOfficial/kio-image-format/releases/latest).
+
+| File                    | Platform        | Description                          |
+|-------------------------|-----------------|--------------------------------------|
+| `kif-2.0.0-setup.exe`  | Windows x64     | Installer — adds KIF to PATH         |
+| `kif.exe`               | Windows x64     | Portable — no install needed         |
+| `kif-linux-x86_64`      | Linux x64       | Portable — no install needed         |
+
+> No Python required — all binaries are self-contained.
+
+---
+
+## Installation from source
 
 ```bash
 git clone https://github.com/kibaofficial/kio-image-format.git
