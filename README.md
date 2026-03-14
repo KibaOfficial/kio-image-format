@@ -12,7 +12,7 @@
 **A minimal, open, and hackable binary image format.**
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.5.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.6.0-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
 </div>
@@ -277,6 +277,21 @@ Results on a 736×1121 JPEG (averaged over 5 runs):
 > KIF raw encode is the fastest of all variants — no compression overhead, just raw bytes.
 > RLE is slower in Python due to per-pixel looping. A C/Rust implementation would be significantly faster.
 
+### View
+
+Open a KIF file in the built-in GUI viewer:
+
+```bash
+python src/main.py view image.kif
+```
+
+- Dark mode GUI powered by CustomTkinter
+- Auto-scales image to fit the window
+- Info bar shows: filename, resolution, channels, bit depth, compression, file size, and compression savings
+- Window title displays the filename
+
+> Requires `customtkinter`: `pip install customtkinter`
+
 ---
 
 ## Project Structure
@@ -294,6 +309,7 @@ kif/
  │    ├── stats.py        # RLE analysis and compression stats
  │    ├── test.py         # Full test suite for all variants
  │    ├── benchmark.py    # Encode/decode speed benchmark vs PNG
+ │    ├── viewer.py       # CustomTkinter GUI viewer
  │    └── main.py         # CLI entry point
  └── README.md
 ```
@@ -310,6 +326,7 @@ kif/
 - [x] Stats command (RLE analysis and compression efficiency)
 - [x] Test suite (all variants, auto compare, summary)
 - [x] Benchmarks (encode/decode speed vs PNG)
+- [x] GUI Viewer (CustomTkinter, dark mode, info bar)
 - [ ] 16-bit color depth
 - [ ] Metadata / EXIF chunk
 - [ ] KIF v2 — chunk-based extensible format

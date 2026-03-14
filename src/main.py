@@ -71,6 +71,10 @@ def main():
     stats_parser = subparsers.add_parser("stats", help="show RLE stats and compression analysis")
     stats_parser.add_argument("input", help="input KIF path (e.g. image.kif)")
 
+    # view command
+    view_parser = subparsers.add_parser("view", help="open a KIF file in the viewer")
+    view_parser.add_argument("input", help="input KIF path (e.g. image.kif)")
+
     args = parser.parse_args()
 
     if args.command == "encode":
@@ -87,7 +91,9 @@ def main():
         compare(args.a, args.b)
     elif args.command == "stats":
         stats(args.input)
-
+    elif args.command == "view":
+        from viewer import view
+        view(args.input)
 
 if __name__ == "__main__":
     main()
