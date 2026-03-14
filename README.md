@@ -285,7 +285,7 @@ KIF Stats
 Run all encoding/decoding variants and print a full summary:
 
 ```bash
-python src/test.py
+python src/tools/test.py
 ```
 
 Generates all v1 and v2 variants, runs info + stats on each, compares decoded output against the original, and prints a size summary:
@@ -317,7 +317,7 @@ Generates all v1 and v2 variants, runs info + stats on each, compares decoded ou
 Compare encode/decode speed and file size across all KIF variants vs PNG:
 
 ```bash
-python src/benchmark.py
+python src/tools/benchmark.py
 ```
 
 Results on a 736×1121 JPEG (averaged over 5 runs):
@@ -355,23 +355,31 @@ python src/main.py view image.kif
 ## Project Structure
 
 ```
-kif/
+kio-image-format/
  ├── src/
- │    ├── header.py       # Format spec, constants, pack/unpack (v1)
- │    ├── chunk.py        # Chunk engine with CRC32 (v2)
- │    ├── encoder.py      # Image → KIF v1
- │    ├── encoder_v2.py   # Image → KIF v2 (chunk-based)
- │    ├── decoder.py      # KIF v1 → Image
- │    ├── decoder_v2.py   # KIF v2 → Image
- │    ├── converter.py    # Any image → KIF (uses encoder internally)
- │    ├── rle.py          # RLE compression / decompression
- │    ├── info.py         # KIF metadata display (auto-detects v1/v2)
- │    ├── compare.py      # Pixel-by-pixel image comparison
- │    ├── stats.py        # RLE analysis and compression stats
- │    ├── test.py         # Full test suite for all variants (v1 + v2)
- │    ├── benchmark.py    # Encode/decode speed benchmark vs PNG
- │    ├── viewer.py       # CustomTkinter GUI viewer
- │    └── main.py         # CLI entry point
+ │    ├── core/
+ │    │    ├── header.py       # Format spec, constants, pack/unpack
+ │    │    ├── chunk.py        # Chunk engine with CRC32 (v2)
+ │    │    └── rle.py          # RLE compression / decompression
+ │    │
+ │    ├── v1/
+ │    │    ├── encoder.py      # Image → KIF v1
+ │    │    └── decoder.py      # KIF v1 → Image
+ │    │
+ │    ├── v2/
+ │    │    ├── encoder.py      # Image → KIF v2 (chunk-based)
+ │    │    └── decoder.py      # KIF v2 → Image
+ │    │
+ │    ├── tools/
+ │    │    ├── converter.py    # Any image → KIF (uses v1 encoder)
+ │    │    ├── info.py         # KIF metadata display (auto-detects v1/v2)
+ │    │    ├── compare.py      # Pixel-by-pixel image comparison
+ │    │    ├── stats.py        # RLE analysis and compression stats
+ │    │    ├── test.py         # Full test suite for all variants (v1 + v2)
+ │    │    ├── benchmark.py    # Encode/decode speed benchmark vs PNG
+ │    │    └── viewer.py       # CustomTkinter GUI viewer
+ │    │
+ │    └── main.py              # CLI entry point
  └── README.md
 ```
 
