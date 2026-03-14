@@ -38,6 +38,8 @@ def decode(input_path: str, output_path: str):
         mode = "RGBA"
     elif channels == Channels.RGB:
         mode = "RGB"
+    elif channels == Channels.GRAYSCALE:
+        mode = "L"
     else:
         raise ValueError(f"[KIF] unsupported channel count: {channels}")
 

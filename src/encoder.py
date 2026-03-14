@@ -8,12 +8,15 @@ from header import KIF_SIGNATURE, Channels, Compression, pack_header
 from rle import rle_encode
 
 
-def encode(input_path: str, output_path: str, compression: int = Compression.NONE):
+def encode(input_path: str, output_path: str, compression: int = Compression.NONE, grayscale: bool = False):
     # load image
     img = Image.open(input_path)
 
-    # convert to RGB or RGBA depending on source image
-    if img.mode == "RGBA":
+    # convert mode
+    if grayscale:
+        img = img.convert("L")
+        channels = Channels.GRAYSCALE
+    elif img.mode == "RGBA":
         channels = Channels.RGBA
     else:
         img = img.convert("RGB")
@@ -38,5 +41,5 @@ def encode(input_path: str, output_path: str, compression: int = Compression.NON
 
     print(f"[KIF] encoded: {input_path} -> {output_path}")
     print(f"      size:    {width}x{height}")
-    print(f"      channels:{channels}")
+    print(f"      channels:{channels} ({'Grayscale' if grayscale else 'RGB' if channels == Channels.RGB else 'RGBA'})")
     print(f"      bytes:   {len(pixel_data)}")

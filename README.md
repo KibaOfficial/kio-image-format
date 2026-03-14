@@ -12,7 +12,7 @@
 **A minimal, open, and hackable binary image format.**
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.2.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.3.0-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
 </div>
@@ -121,6 +121,20 @@ python src/main.py encode input.png output.kif --compression rle
 python src/main.py encode input.png output.kif -c rle
 ```
 
+As grayscale:
+
+```bash
+python src/main.py encode input.png output.kif --grayscale
+# or shorthand:
+python src/main.py encode input.png output.kif -g
+```
+
+Combine both:
+
+```bash
+python src/main.py encode input.png output.kif -c rle -g
+```
+
 ### Decode
 
 Convert a KIF file back to an image:
@@ -192,6 +206,10 @@ KIF Compare
 > **Note:** RLE works best on images with large uniform areas (logos, UI, pixel art).
 > For photos with lots of color variation it may not reduce file size significantly.
 
+---
+
+## Project Structure
+
 ```
 kif/
  ├── src/
@@ -214,7 +232,7 @@ kif/
 - [x] RLE compression support
 - [x] Info command (display KIF metadata without decoding)
 - [x] Pixel compare tool (regression testing)
-- [ ] Grayscale support
+- [x] Grayscale support
 - [ ] 16-bit color depth
 - [ ] Metadata / EXIF chunk
 - [ ] KIF v2 — chunk-based extensible format

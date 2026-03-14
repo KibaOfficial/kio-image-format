@@ -30,6 +30,11 @@ def main():
         default="none",
         help="compression method (default: none)"
     )
+    encode_parser.add_argument(
+        "--grayscale", "-g",
+        action="store_true",
+        help="convert image to grayscale before encoding"
+    )
 
     # decode command
     decode_parser = subparsers.add_parser("decode", help="decode a KIF file to image")
@@ -46,6 +51,11 @@ def main():
         default="none",
         help="compression method (default: none)"
     )
+    convert_parser.add_argument(
+        "--grayscale", "-g",
+        action="store_true",
+        help="convert image to grayscale before encoding"
+    )
 
     # info command
     info_parser = subparsers.add_parser("info", help="display KIF file metadata")
@@ -60,12 +70,12 @@ def main():
 
     if args.command == "encode":
         c = Compression.RLE if args.compression == "rle" else Compression.NONE
-        encode(args.input, args.output, c)
+        encode(args.input, args.output, c, args.grayscale)
     elif args.command == "decode":
         decode(args.input, args.output)
     elif args.command == "convert":
         c = Compression.RLE if args.compression == "rle" else Compression.NONE
-        convert(args.input, args.output, c)
+        convert(args.input, args.output, c, args.grayscale)
     elif args.command == "info":
         info(args.input)
     elif args.command == "compare":
