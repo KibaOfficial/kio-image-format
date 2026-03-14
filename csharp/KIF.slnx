@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="KIF.CLI/KIF.CLI.csproj" />
+  <Project Path="KIF.Core/KIF.Core.csproj" />
+</Solution>

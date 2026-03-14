@@ -37,7 +37,7 @@ hidden_imports = (
 datas = collect_data_files('customtkinter')
 
 a = Analysis(
-    ['src/main.py'],
+    ['python/main.py'],
     pathex=['src'],
     binaries=[],
     datas=datas,
