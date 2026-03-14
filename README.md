@@ -12,7 +12,7 @@
 **A minimal, open, and hackable binary image format.**
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-2.1.0-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
 </div>
@@ -294,12 +294,20 @@ KIF Stats
   Saved:             34.7%
 ```
 
-### Test Suite
+### Test
 
-Run all encoding/decoding variants and print a full summary:
+Run the full test suite for all variants (v1 + v2):
 
 ```bash
-python src/tools/test.py
+python src/main.py test
+```
+
+### Benchmark
+
+Run encode/decode speed benchmark vs PNG:
+
+```bash
+python src/main.py benchmark
 ```
 
 Generates all v1 and v2 variants, runs info + stats on each, compares decoded output against the original, and prints a size summary:
@@ -357,10 +365,12 @@ Open a KIF file in the built-in GUI viewer:
 python src/main.py view image.kif
 ```
 
+- Auto-detects KIF v1 and v2
 - Dark mode GUI powered by CustomTkinter
 - Auto-scales image to fit the window
-- Info bar shows: filename, resolution, channels, bit depth, compression, file size, and compression savings
-- Window title displays the filename
+- Info bar: filename, version, resolution, channels, bit depth, compression, file size
+- Metadata bar for v2 files with embedded metadata
+- Window title shows version and filename
 
 > Requires `customtkinter`: `pip install customtkinter`
 
@@ -411,7 +421,10 @@ kio-image-format/
 - [x] Benchmarks (encode/decode speed vs PNG)
 - [x] GUI Viewer (CustomTkinter, dark mode, info bar)
 - [x] KIF v2 — chunk-based extensible format with CRC32 + metadata
-- [ ] KIF v2 viewer support
+- [x] KIF v2 Viewer support (auto-detect, metadata bar)
+- [x] Windows installer (Inno Setup, PATH integration)
+- [x] Linux binary
+- [ ] GitHub Actions (auto build + release)
 - [ ] 16-bit color depth
 - [ ] C / Rust decoder for performance
 

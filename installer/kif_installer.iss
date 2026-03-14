@@ -3,7 +3,7 @@
 ; https://opensource.org/licenses/MIT
 
 #define MyAppName "KIF"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.1.0"
 #define MyAppPublisher "KibaOfficial"
 #define MyAppURL "https://github.com/kibaofficial/kio-image-format"
 #define MyAppExeName "kif.exe"
@@ -64,14 +64,6 @@ begin
     exit;
   end;
   Result := Pos(';' + Param + ';', ';' + OrigPath + ';') = 0;
-end;
-procedure CurStepChanged(CurStep: TSetupStep);
-begin
-  if CurStep = ssPostInstall then
-  begin
-    // Broadcast WM_SETTINGCHANGE to notify Windows of PATH change
-    SendBroadcastMessage(WM_SETTINGCHANGE, 0, 'Environment');
-  end;
 end;
 
 [Run]
