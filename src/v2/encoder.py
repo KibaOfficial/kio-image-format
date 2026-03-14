@@ -6,7 +6,7 @@
 import struct
 from PIL import Image
 from core.header import KIF_SIGNATURE, Channels, Compression
-from chunk import write_chunk, CHUNK_HEAD, CHUNK_DATA, CHUNK_END, CHUNK_META
+from core.chunk import write_chunk, CHUNK_HEAD, CHUNK_DATA, CHUNK_END, CHUNK_META
 from core.rle import rle_encode
 
 

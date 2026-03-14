@@ -5,9 +5,9 @@
 
 import struct
 from PIL import Image
-from header import KIF_SIGNATURE, Channels, Compression
+from core.header import KIF_SIGNATURE, Channels, Compression
 from chunk import read_all_chunks, CHUNK_HEAD, CHUNK_DATA, CHUNK_META, CHUNK_END
-from rle import rle_decode
+from core.rle import rle_decode
 
 
 # ============================================================

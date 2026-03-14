@@ -6,7 +6,7 @@
 import os
 import struct
 from core.header import KIF_SIGNATURE, Channels, Compression
-from chunk import CHUNK_HEAD, CHUNK_DATA, CHUNK_META, read_all_chunks
+from core.chunk import CHUNK_HEAD, CHUNK_DATA, CHUNK_META, read_all_chunks
 
 
 # ============================================================
