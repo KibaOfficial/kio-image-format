@@ -12,7 +12,7 @@
 **A minimal, open, and hackable binary image format.**
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.6.0-green.svg)
+![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
 </div>
@@ -22,11 +22,15 @@
 ## What is KIF?
 
 KIF (Kio Image Format) is a custom binary image format built from scratch.
-It stores raw pixel data with a fixed signature and a compact 12-byte header —
-no bloat, no magic, just pixels.
+It comes in two versions:
+
+- **KIF v1** — fixed 12-byte header, raw pixel data, simple and fast
+- **KIF v2** — chunk-based extensible format with CRC32 validation, optional metadata, and future-proof design
+
+Both share the same 8-byte file signature and support RGB, RGBA, Grayscale, and RLE compression.
 
 It was designed as a learning project to understand how image formats like PNG and JPEG
-actually work at the binary level: signatures, headers, pixel encoding, and file structure.
+actually work at the binary level: signatures, headers, chunk systems, pixel encoding, and compression.
 
 ---
 
@@ -36,8 +40,28 @@ Every `.kif` file follows this exact layout:
 
 ```
 [Signature]   8 bytes
-[Header]     12 bytes
+[Header]     12 bytes   ← KIF v1
 [ImageData]  variable
+```
+
+### KIF v2 File Structure
+
+KIF v2 uses a chunk-based layout — extensible and CRC-validated:
+
+```
+[Signature]   8 bytes
+[HEAD chunk]  type + length + data + crc32
+[META chunk]  optional — key=value metadata
+[DATA chunk]  type + length + pixel data + crc32
+[END  chunk]  type + length + crc32
+```
+
+Each chunk follows this layout:
+```
+[type]    4 bytes  ASCII (e.g. "HEAD", "DATA")
+[length]  4 bytes  uint32 big-endian
+[data]    variable
+[crc32]   4 bytes  CRC32 over type + data
 ```
 
 ### Signature
@@ -92,11 +116,11 @@ width × height × channels × (bit_depth / 8)
 ## Installation
 
 ```bash
-git clone https://github.com/kibaofficial/kif.git
-cd kif
+git clone https://github.com/kibaofficial/kio-image-format.git
+cd kio-image-format
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install pillow
+pip install pillow customtkinter
 ```
 
 ---
@@ -152,7 +176,37 @@ python src/main.py convert input.jpg output.kif
 python src/main.py convert input.jpg output.kif -c rle
 ```
 
-### Info
+### Encode v2
+
+Encode to KIF v2 (chunk-based, CRC validated, optional metadata):
+
+```bash
+python src/main.py encode-v2 input.png output.kif
+python src/main.py encode-v2 input.png output.kif -c rle -g
+python src/main.py encode-v2 input.png output.kif --meta author=kiba tool=KIF version=2
+```
+
+### Decode v2
+
+```bash
+python src/main.py decode-v2 input.kif output.png
+```
+
+Output with metadata:
+```
+[KIF v2] decoding: image.kif
+         size:        736x1121
+         channels:    3
+         bitdepth:    8
+         compression: none
+         metadata:
+           author: kiba
+           tool: KIF
+           version: 2
+         saved to: output.png
+```
+
+> `info` auto-detects v1 vs v2 — no flags needed.
 
 Display metadata of a KIF file without decoding it:
 
@@ -234,16 +288,20 @@ Run all encoding/decoding variants and print a full summary:
 python src/test.py
 ```
 
-Generates all 4 variants (rgb_raw, rgb_rle, gray_raw, gray_rle), runs info + stats on each,
-compares RGB decoded output against the original, and prints a size summary:
+Generates all v1 and v2 variants, runs info + stats on each, compares decoded output against the original, and prints a size summary:
 
 ```
-  Variant                 File Size
-  -------------------- ------------
-  rgb_raw                    2.48 MB
-  rgb_rle                    1.62 MB
-  gray_raw                   0.83 MB
-  gray_rle                   0.73 MB
+  Variant                      File Size
+  ------------------------- ------------
+  [v1] rgb_raw                    2.48 MB
+  [v1] rgb_rle                    1.62 MB
+  [v1] gray_raw                   0.83 MB
+  [v1] gray_rle                   0.73 MB
+  [v2] v2_rgb_raw                 2.48 MB
+  [v2] v2_rgb_rle                 1.62 MB
+  [v2] v2_gray_raw                0.83 MB
+  [v2] v2_gray_rle                0.73 MB
+  [v2] v2_rgb_meta                2.48 MB
 ```
 
 | Flag              | Description                                      |
@@ -267,14 +325,14 @@ Results on a 736×1121 JPEG (averaged over 5 runs):
 ```
   Variant                  Encode     Decode       Size
   -------------------- ---------- ---------- ----------
-  KIF raw RGB              13.2ms     44.0ms     2.48MB
-  KIF RLE RGB             369.0ms    161.0ms     1.62MB
-  KIF gray raw              8.5ms     19.2ms     0.83MB
-  KIF gray RLE            260.0ms    102.0ms     0.73MB
-  PNG baseline             41.0ms     11.0ms     0.44MB
+  KIF v1 raw RGB           12.8ms     55.7ms     2.48MB
+  KIF v1 RLE RGB          392.3ms    162.3ms     1.62MB
+  KIF v2 raw RGB           10.5ms     43.5ms     2.48MB
+  KIF v2 RLE RGB          289.2ms    139.6ms     1.62MB
+  PNG baseline             39.6ms     11.2ms     0.44MB
 ```
 
-> KIF raw encode is the fastest of all variants — no compression overhead, just raw bytes.
+> KIF v2 is faster than v1 in all categories — the chunk overhead is minimal and CRC32 runs via zlib (C implementation).
 > RLE is slower in Python due to per-pixel looping. A C/Rust implementation would be significantly faster.
 
 ### View
@@ -299,15 +357,18 @@ python src/main.py view image.kif
 ```
 kif/
  ├── src/
- │    ├── header.py       # Format spec, constants, pack/unpack
- │    ├── encoder.py      # Image → KIF
- │    ├── decoder.py      # KIF → Image
+ │    ├── header.py       # Format spec, constants, pack/unpack (v1)
+ │    ├── chunk.py        # Chunk engine with CRC32 (v2)
+ │    ├── encoder.py      # Image → KIF v1
+ │    ├── encoder_v2.py   # Image → KIF v2 (chunk-based)
+ │    ├── decoder.py      # KIF v1 → Image
+ │    ├── decoder_v2.py   # KIF v2 → Image
  │    ├── converter.py    # Any image → KIF (uses encoder internally)
  │    ├── rle.py          # RLE compression / decompression
- │    ├── info.py         # KIF metadata display
+ │    ├── info.py         # KIF metadata display (auto-detects v1/v2)
  │    ├── compare.py      # Pixel-by-pixel image comparison
  │    ├── stats.py        # RLE analysis and compression stats
- │    ├── test.py         # Full test suite for all variants
+ │    ├── test.py         # Full test suite for all variants (v1 + v2)
  │    ├── benchmark.py    # Encode/decode speed benchmark vs PNG
  │    ├── viewer.py       # CustomTkinter GUI viewer
  │    └── main.py         # CLI entry point
@@ -327,9 +388,9 @@ kif/
 - [x] Test suite (all variants, auto compare, summary)
 - [x] Benchmarks (encode/decode speed vs PNG)
 - [x] GUI Viewer (CustomTkinter, dark mode, info bar)
+- [x] KIF v2 — chunk-based extensible format with CRC32 + metadata
+- [ ] KIF v2 viewer support
 - [ ] 16-bit color depth
-- [ ] Metadata / EXIF chunk
-- [ ] KIF v2 — chunk-based extensible format
 - [ ] C / Rust decoder for performance
 
 ---

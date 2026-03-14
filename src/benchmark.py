@@ -8,7 +8,9 @@ import sys
 import time
 from PIL import Image
 from encoder import encode
+from encoder_v2 import encode_v2
 from decoder import decode
+from decoder_v2 import decode_v2
 from header import Compression
 
 # ============================================================
@@ -17,7 +19,7 @@ from header import Compression
 
 INPUT_IMAGE = "img/test.jpeg"
 OUT_DIR     = os.path.join("out", "benchmark")
-RUNS        = 5  # average over N runs for accuracy
+RUNS        = 5
 
 # ============================================================
 # SUPPRESS OUTPUT
@@ -50,18 +52,17 @@ def avg_ms(times: list) -> float:
     return (sum(times) / len(times)) * 1000
 
 
-def benchmark_encode(input_path: str, output_path: str, compression: int, grayscale: bool):
+def benchmark_encode_v1(input_path, output_path, compression, grayscale):
     times = []
     for _ in range(RUNS):
         start = time.perf_counter()
         with SuppressOutput():
             encode(input_path, output_path, compression, grayscale)
         times.append(time.perf_counter() - start)
-    size = os.path.getsize(output_path)
-    return avg_ms(times), size
+    return avg_ms(times), os.path.getsize(output_path)
 
 
-def benchmark_decode(input_path: str, output_path: str):
+def benchmark_decode_v1(input_path, output_path):
     times = []
     for _ in range(RUNS):
         start = time.perf_counter()
@@ -71,18 +72,37 @@ def benchmark_decode(input_path: str, output_path: str):
     return avg_ms(times)
 
 
-def benchmark_png_encode(input_path: str, output_path: str):
+def benchmark_encode_v2(input_path, output_path, compression, grayscale):
+    times = []
+    for _ in range(RUNS):
+        start = time.perf_counter()
+        with SuppressOutput():
+            encode_v2(input_path, output_path, compression, grayscale)
+        times.append(time.perf_counter() - start)
+    return avg_ms(times), os.path.getsize(output_path)
+
+
+def benchmark_decode_v2(input_path, output_path):
+    times = []
+    for _ in range(RUNS):
+        start = time.perf_counter()
+        with SuppressOutput():
+            decode_v2(input_path, output_path)
+        times.append(time.perf_counter() - start)
+    return avg_ms(times)
+
+
+def benchmark_png_encode(input_path, output_path):
     img = Image.open(input_path).convert("RGB")
     times = []
     for _ in range(RUNS):
         start = time.perf_counter()
         img.save(output_path, format="PNG")
         times.append(time.perf_counter() - start)
-    size = os.path.getsize(output_path)
-    return avg_ms(times), size
+    return avg_ms(times), os.path.getsize(output_path)
 
 
-def benchmark_png_decode(input_path: str):
+def benchmark_png_decode(input_path):
     times = []
     for _ in range(RUNS):
         start = time.perf_counter()
@@ -106,53 +126,23 @@ def main():
 
     results = []
 
-    # --------------------------------------------------------
-    # KIF raw RGB
-    # --------------------------------------------------------
-    divider("KIF raw RGB")
-    kif_raw = os.path.join(OUT_DIR, "bench_rgb_raw.kif")
-    dec_raw = os.path.join(OUT_DIR, "bench_rgb_raw_decoded.png")
-    enc_ms, enc_size = benchmark_encode(INPUT_IMAGE, kif_raw, Compression.NONE, False)
-    dec_ms = benchmark_decode(kif_raw, dec_raw)
-    print(f"  Encode: {enc_ms:.1f} ms   Decode: {dec_ms:.1f} ms   Size: {enc_size / 1_000_000:.2f} MB")
-    results.append(("KIF raw RGB",  enc_ms, dec_ms, enc_size))
+    variants = [
+        ("KIF v1 raw RGB",   lambda o: benchmark_encode_v1(INPUT_IMAGE, o, Compression.NONE, False), "bench_v1_rgb_raw.kif",  lambda i, o: benchmark_decode_v1(i, o), "bench_v1_rgb_raw_dec.png"),
+        ("KIF v1 RLE RGB",   lambda o: benchmark_encode_v1(INPUT_IMAGE, o, Compression.RLE,  False), "bench_v1_rgb_rle.kif",  lambda i, o: benchmark_decode_v1(i, o), "bench_v1_rgb_rle_dec.png"),
+        ("KIF v2 raw RGB",   lambda o: benchmark_encode_v2(INPUT_IMAGE, o, Compression.NONE, False), "bench_v2_rgb_raw.kif",  lambda i, o: benchmark_decode_v2(i, o), "bench_v2_rgb_raw_dec.png"),
+        ("KIF v2 RLE RGB",   lambda o: benchmark_encode_v2(INPUT_IMAGE, o, Compression.RLE,  False), "bench_v2_rgb_rle.kif",  lambda i, o: benchmark_decode_v2(i, o), "bench_v2_rgb_rle_dec.png"),
+    ]
 
-    # --------------------------------------------------------
-    # KIF RLE RGB
-    # --------------------------------------------------------
-    divider("KIF RLE RGB")
-    kif_rle = os.path.join(OUT_DIR, "bench_rgb_rle.kif")
-    dec_rle = os.path.join(OUT_DIR, "bench_rgb_rle_decoded.png")
-    enc_ms, enc_size = benchmark_encode(INPUT_IMAGE, kif_rle, Compression.RLE, False)
-    dec_ms = benchmark_decode(kif_rle, dec_rle)
-    print(f"  Encode: {enc_ms:.1f} ms   Decode: {dec_ms:.1f} ms   Size: {enc_size / 1_000_000:.2f} MB")
-    results.append(("KIF RLE RGB",  enc_ms, dec_ms, enc_size))
+    for name, enc_fn, kif_name, dec_fn, dec_name in variants:
+        divider(name)
+        kif_path = os.path.join(OUT_DIR, kif_name)
+        dec_path = os.path.join(OUT_DIR, dec_name)
+        enc_ms, enc_size = enc_fn(kif_path)
+        dec_ms = dec_fn(kif_path, dec_path)
+        print(f"  Encode: {enc_ms:.1f} ms   Decode: {dec_ms:.1f} ms   Size: {enc_size / 1_000_000:.2f} MB")
+        results.append((name, enc_ms, dec_ms, enc_size))
 
-    # --------------------------------------------------------
-    # KIF raw Grayscale
-    # --------------------------------------------------------
-    divider("KIF raw Grayscale")
-    kif_gray = os.path.join(OUT_DIR, "bench_gray_raw.kif")
-    dec_gray = os.path.join(OUT_DIR, "bench_gray_raw_decoded.png")
-    enc_ms, enc_size = benchmark_encode(INPUT_IMAGE, kif_gray, Compression.NONE, True)
-    dec_ms = benchmark_decode(kif_gray, dec_gray)
-    print(f"  Encode: {enc_ms:.1f} ms   Decode: {dec_ms:.1f} ms   Size: {enc_size / 1_000_000:.2f} MB")
-    results.append(("KIF gray raw", enc_ms, dec_ms, enc_size))
-
-    # --------------------------------------------------------
-    # KIF RLE Grayscale
-    # --------------------------------------------------------
-    divider("KIF RLE Grayscale")
-    kif_gray_rle = os.path.join(OUT_DIR, "bench_gray_rle.kif")
-    dec_gray_rle = os.path.join(OUT_DIR, "bench_gray_rle_decoded.png")
-    enc_ms, enc_size = benchmark_encode(INPUT_IMAGE, kif_gray_rle, Compression.RLE, True)
-    dec_ms = benchmark_decode(kif_gray_rle, dec_gray_rle)
-    print(f"  Encode: {enc_ms:.1f} ms   Decode: {dec_ms:.1f} ms   Size: {enc_size / 1_000_000:.2f} MB")
-    results.append(("KIF gray RLE", enc_ms, dec_ms, enc_size))
-
-    # --------------------------------------------------------
-    # PNG (baseline)
-    # --------------------------------------------------------
+    # PNG baseline
     divider("PNG (baseline)")
     png_path = os.path.join(OUT_DIR, "bench_baseline.png")
     enc_ms, enc_size = benchmark_png_encode(INPUT_IMAGE, png_path)
@@ -160,9 +150,6 @@ def main():
     print(f"  Encode: {enc_ms:.1f} ms   Decode: {dec_ms:.1f} ms   Size: {enc_size / 1_000_000:.2f} MB")
     results.append(("PNG baseline", enc_ms, dec_ms, enc_size))
 
-    # --------------------------------------------------------
-    # SUMMARY
-    # --------------------------------------------------------
     divider("SUMMARY")
     print(f"\n  {'Variant':<20} {'Encode':>10} {'Decode':>10} {'Size':>10}")
     print(f"  {'-'*20} {'-'*10} {'-'*10} {'-'*10}")

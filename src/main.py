@@ -37,10 +37,36 @@ def main():
         help="convert image to grayscale before encoding"
     )
 
+    # encode-v2 command
+    encode_v2_parser = subparsers.add_parser("encode-v2", help="encode an image to KIF v2 (chunk-based)")
+    encode_v2_parser.add_argument("input",  help="input image path")
+    encode_v2_parser.add_argument("output", help="output KIF path")
+    encode_v2_parser.add_argument(
+        "--compression", "-c",
+        choices=["none", "rle"],
+        default="none",
+        help="compression method (default: none)"
+    )
+    encode_v2_parser.add_argument(
+        "--grayscale", "-g",
+        action="store_true",
+        help="convert to grayscale before encoding"
+    )
+    encode_v2_parser.add_argument(
+        "--meta", "-m",
+        nargs="*",
+        help="metadata key=value pairs e.g. --meta author=kiba tool=KIF"
+    )
+
     # decode command
     decode_parser = subparsers.add_parser("decode", help="decode a KIF file to image")
     decode_parser.add_argument("input",  help="input KIF path (e.g. image.kif)")
     decode_parser.add_argument("output", help="output image path (e.g. image.png)")
+
+    # decode-v2 command
+    decode_v2_parser = subparsers.add_parser("decode-v2", help="decode a KIF v2 file")
+    decode_v2_parser.add_argument("input",  help="input KIF v2 path")
+    decode_v2_parser.add_argument("output", help="output image path")
 
     # convert command
     convert_parser = subparsers.add_parser("convert", help="convert any image to KIF")
@@ -80,8 +106,20 @@ def main():
     if args.command == "encode":
         c = Compression.RLE if args.compression == "rle" else Compression.NONE
         encode(args.input, args.output, c, args.grayscale)
+    elif args.command == "encode-v2":
+        from encoder_v2 import encode_v2
+        c = Compression.RLE if args.compression == "rle" else Compression.NONE
+        meta = {}
+        if args.meta:
+            for pair in args.meta:
+                k, _, v = pair.partition("=")
+                meta[k.strip()] = v.strip()
+        encode_v2(args.input, args.output, c, args.grayscale, meta or None)
     elif args.command == "decode":
         decode(args.input, args.output)
+    elif args.command == "decode-v2":
+        from decoder_v2 import decode_v2
+        decode_v2(args.input, args.output)
     elif args.command == "convert":
         c = Compression.RLE if args.compression == "rle" else Compression.NONE
         convert(args.input, args.output, c, args.grayscale)
