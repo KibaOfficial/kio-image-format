@@ -12,7 +12,7 @@
 **A minimal, open, and hackable binary image format.**
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.3.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.4.0-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
 </div>
@@ -196,7 +196,55 @@ KIF Compare
   Status:          identical ✓
 ```
 
-### Compression
+### Stats
+
+Show RLE analysis and compression efficiency of a KIF file:
+
+```bash
+python src/main.py stats image.kif
+```
+
+Output:
+```
+KIF Stats
+---------
+  File:              image.kif
+  Size:              736x1121
+  Pixels:            825,056
+  Unique colors:     24,011
+
+  RLE Analysis:
+  Total runs:        404,319
+  Average run:       2.0 pixels
+  Longest run:       90 pixels
+  Shortest run:      1 pixels
+  Single px runs:    273,865 (67.7%)
+
+  RLE Efficiency:
+  Raw size:          2.48 MB
+  RLE size:          1.62 MB
+  Saved:             34.7%
+```
+
+### Test Suite
+
+Run all encoding/decoding variants and print a full summary:
+
+```bash
+python src/test.py
+```
+
+Generates all 4 variants (rgb_raw, rgb_rle, gray_raw, gray_rle), runs info + stats on each,
+compares RGB decoded output against the original, and prints a size summary:
+
+```
+  Variant                 File Size
+  -------------------- ------------
+  rgb_raw                    2.48 MB
+  rgb_rle                    1.62 MB
+  gray_raw                   0.83 MB
+  gray_rle                   0.73 MB
+```
 
 | Flag              | Description                                      |
 |-------------------|--------------------------------------------------|
@@ -220,6 +268,8 @@ kif/
  │    ├── rle.py          # RLE compression / decompression
  │    ├── info.py         # KIF metadata display
  │    ├── compare.py      # Pixel-by-pixel image comparison
+ │    ├── stats.py        # RLE analysis and compression stats
+ │    ├── test.py         # Full test suite for all variants
  │    └── main.py         # CLI entry point
  └── README.md
 ```
@@ -233,6 +283,9 @@ kif/
 - [x] Info command (display KIF metadata without decoding)
 - [x] Pixel compare tool (regression testing)
 - [x] Grayscale support
+- [x] Stats command (RLE analysis and compression efficiency)
+- [x] Test suite (all variants, auto compare, summary)
+- [ ] Benchmarks (encode/decode speed vs PNG)
 - [ ] 16-bit color depth
 - [ ] Metadata / EXIF chunk
 - [ ] KIF v2 — chunk-based extensible format

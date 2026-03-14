@@ -9,6 +9,7 @@ from decoder import decode
 from converter import convert
 from info import info
 from compare import compare
+from stats import stats
 from header import Compression
 
 
@@ -66,6 +67,10 @@ def main():
     compare_parser.add_argument("a", help="first image path")
     compare_parser.add_argument("b", help="second image path")
 
+    # stats command
+    stats_parser = subparsers.add_parser("stats", help="show RLE stats and compression analysis")
+    stats_parser.add_argument("input", help="input KIF path (e.g. image.kif)")
+
     args = parser.parse_args()
 
     if args.command == "encode":
@@ -80,6 +85,8 @@ def main():
         info(args.input)
     elif args.command == "compare":
         compare(args.a, args.b)
+    elif args.command == "stats":
+        stats(args.input)
 
 
 if __name__ == "__main__":
