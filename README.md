@@ -12,7 +12,7 @@
 **A minimal, open, and hackable binary image format.**
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-yellow.svg)
 
 </div>
@@ -70,7 +70,7 @@ All multi-byte integers are stored in **big-endian** byte order.
 | `height`      | `uint32` | 4 bytes | Image height in pixels             |
 | `channels`    | `uint8`  | 1 byte  | `1` = Grayscale, `3` = RGB, `4` = RGBA |
 | `bit_depth`   | `uint8`  | 1 byte  | Bits per channel (currently: `8`) |
-| `compression` | `uint8`  | 1 byte  | `0` = None, `1` = RLE (planned)   |
+| `compression` | `uint8`  | 1 byte  | `0` = None, `1` = RLE             |
 | `reserved`    | `uint8`  | 1 byte  | Must be `0` in KIF v1             |
 
 ### Image Data
@@ -113,6 +113,14 @@ Convert any image to KIF:
 python src/main.py encode input.png output.kif
 ```
 
+With RLE compression:
+
+```bash
+python src/main.py encode input.png output.kif --compression rle
+# or shorthand:
+python src/main.py encode input.png output.kif -c rle
+```
+
 ### Decode
 
 Convert a KIF file back to an image:
@@ -127,7 +135,18 @@ Shorthand for encoding any supported image format to KIF:
 
 ```bash
 python src/main.py convert input.jpg output.kif
+python src/main.py convert input.jpg output.kif -c rle
 ```
+
+### Compression
+
+| Flag              | Description                                      |
+|-------------------|--------------------------------------------------|
+| `-c none`         | No compression — raw pixel data (default)        |
+| `-c rle`          | Run-Length Encoding — best for flat colors/logos |
+
+> **Note:** RLE works best on images with large uniform areas (logos, UI, pixel art).
+> For photos with lots of color variation it may not reduce file size significantly.
 
 ---
 
@@ -140,6 +159,7 @@ kif/
  │    ├── encoder.py      # Image → KIF
  │    ├── decoder.py      # KIF → Image
  │    ├── converter.py    # Any image → KIF (uses encoder internally)
+ │    ├── rle.py          # RLE compression / decompression
  │    └── main.py         # CLI entry point
  └── README.md
 ```
@@ -149,7 +169,8 @@ kif/
 ## Roadmap
 
 - [x] KIF v1 — raw pixel format (RGB / RGBA, 8-bit)
-- [ ] RLE compression support
+- [x] RLE compression support
+- [ ] Info command (display KIF metadata without decoding)
 - [ ] 16-bit color depth
 - [ ] Grayscale support
 - [ ] Metadata / EXIF chunk
