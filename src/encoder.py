@@ -5,9 +5,10 @@
 
 from PIL import Image
 from header import KIF_SIGNATURE, Channels, Compression, pack_header
+from rle import rle_encode
 
 
-def encode(input_path: str, output_path: str):
+def encode(input_path: str, output_path: str, compression: int = Compression.NONE):
     # load image
     img = Image.open(input_path)
 
@@ -20,10 +21,14 @@ def encode(input_path: str, output_path: str):
 
     width, height = img.size
     bit_depth = 8
-    compression = Compression.NONE
-
-    # get raw pixel bytes
     pixel_data = img.tobytes()
+
+    # apply compression if requested
+    if compression == Compression.RLE:
+        pixel_data = rle_encode(pixel_data, channels)
+        print(f"      compression: RLE")
+    else:
+        print(f"      compression: none")
 
     # write KIF file
     with open(output_path, "wb") as f:

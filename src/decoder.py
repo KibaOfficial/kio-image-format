@@ -4,7 +4,8 @@
 # https://opensource.org/licenses/MIT
 
 from PIL import Image
-from header import KIF_SIGNATURE, Channels, pack_header
+from header import KIF_SIGNATURE, Channels, Compression
+from rle import rle_decode
 import struct
 
 
@@ -17,15 +18,20 @@ def decode(input_path: str, output_path: str):
 
         # read header (12 bytes)
         header = f.read(12)
-        width, height, channels, bit_depth, compression, reserved = struct.unpack(">IIBBBB", header)
+        width, height, channels, bit_depth, compression, _ = struct.unpack(">IIBBBB", header)
 
         print(f"[KIF] decoding: {input_path}")
         print(f"      size:     {width}x{height}")
         print(f"      channels: {channels}")
         print(f"      bitdepth: {bit_depth}")
+        print(f"      compression: {'RLE' if compression == Compression.RLE else 'none'}")
 
         # read pixel data
-        pixel_data = f.read(width * height * channels)
+        pixel_data = f.read()
+
+    # decompress if needed
+    if compression == Compression.RLE:
+        pixel_data = rle_decode(pixel_data, channels)
 
     # determine PIL mode
     if channels == Channels.RGBA:

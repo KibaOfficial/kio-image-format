@@ -7,6 +7,7 @@ import argparse
 from encoder import encode
 from decoder import decode
 from converter import convert
+from header import Compression
 
 
 def main():
@@ -21,6 +22,12 @@ def main():
     encode_parser = subparsers.add_parser("encode", help="encode an image to KIF")
     encode_parser.add_argument("input",  help="input image path (e.g. image.png)")
     encode_parser.add_argument("output", help="output KIF path (e.g. image.kif)")
+    encode_parser.add_argument(
+        "--compression", "-c",
+        choices=["none", "rle"],
+        default="none",
+        help="compression method (default: none)"
+    )
 
     # decode command
     decode_parser = subparsers.add_parser("decode", help="decode a KIF file to image")
@@ -31,15 +38,23 @@ def main():
     convert_parser = subparsers.add_parser("convert", help="convert any image to KIF")
     convert_parser.add_argument("input",  help="input image path (e.g. image.jpg)")
     convert_parser.add_argument("output", help="output KIF path (e.g. image.kif)")
+    convert_parser.add_argument(
+        "--compression", "-c",
+        choices=["none", "rle"],
+        default="none",
+        help="compression method (default: none)"
+    )
 
     args = parser.parse_args()
 
     if args.command == "encode":
-        encode(args.input, args.output)
+        c = Compression.RLE if args.compression == "rle" else Compression.NONE
+        encode(args.input, args.output, c)
     elif args.command == "decode":
         decode(args.input, args.output)
     elif args.command == "convert":
-        convert(args.input, args.output)
+        c = Compression.RLE if args.compression == "rle" else Compression.NONE
+        convert(args.input, args.output, c)
 
 
 if __name__ == "__main__":
