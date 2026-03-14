@@ -3,8 +3,8 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-from encoder import encode
-from header import Compression
+from v1.encoder import encode
+from core.header import Compression
 
 
 def convert(input_path: str, output_path: str, compression: int = Compression.NONE, grayscale: bool = False):

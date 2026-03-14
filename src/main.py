@@ -4,13 +4,15 @@
 # https://opensource.org/licenses/MIT
 
 import argparse
-from encoder import encode
-from decoder import decode
-from converter import convert
-from info import info
-from compare import compare
-from stats import stats
-from header import Compression
+from v1.encoder import encode
+from v1.decoder import decode
+from v2.encoder import encode_v2
+from v2.decoder import decode_v2
+from tools.converter import convert
+from tools.info import info
+from tools.compare import compare
+from tools.stats import stats
+from core.header import Compression
 
 
 def main():
@@ -107,7 +109,6 @@ def main():
         c = Compression.RLE if args.compression == "rle" else Compression.NONE
         encode(args.input, args.output, c, args.grayscale)
     elif args.command == "encode-v2":
-        from encoder_v2 import encode_v2
         c = Compression.RLE if args.compression == "rle" else Compression.NONE
         meta = {}
         if args.meta:
@@ -118,7 +119,6 @@ def main():
     elif args.command == "decode":
         decode(args.input, args.output)
     elif args.command == "decode-v2":
-        from decoder_v2 import decode_v2
         decode_v2(args.input, args.output)
     elif args.command == "convert":
         c = Compression.RLE if args.compression == "rle" else Compression.NONE
@@ -130,7 +130,7 @@ def main():
     elif args.command == "stats":
         stats(args.input)
     elif args.command == "view":
-        from viewer import view
+        from tools.viewer import view
         view(args.input)
 
 if __name__ == "__main__":

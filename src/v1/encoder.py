@@ -4,8 +4,8 @@
 # https://opensource.org/licenses/MIT
 
 from PIL import Image
-from header import KIF_SIGNATURE, Channels, Compression, pack_header
-from rle import rle_encode
+from core.rle import rle_encode
+from core.header import pack_header, KIF_SIGNATURE, Channels, Compression
 
 
 def encode(input_path: str, output_path: str, compression: int = Compression.NONE, grayscale: bool = False):

@@ -5,14 +5,14 @@
 
 import os
 import sys
-from encoder import encode
-from encoder_v2 import encode_v2
-from decoder import decode
-from decoder_v2 import decode_v2
+from v1.encoder import encode
+from v2.encoder import encode_v2
+from v1.decoder import decode
+from v2.decoder import decode_v2
 from info import info
 from stats import stats
 from compare import compare
-from header import Compression
+from core.header import Compression
 
 # ============================================================
 # CONFIG

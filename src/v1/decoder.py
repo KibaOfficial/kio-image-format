@@ -4,8 +4,8 @@
 # https://opensource.org/licenses/MIT
 
 from PIL import Image
-from header import KIF_SIGNATURE, Channels, Compression
-from rle import rle_decode
+from core.header import KIF_SIGNATURE, Channels, Compression
+from core.rle import rle_decode
 import struct
 
 

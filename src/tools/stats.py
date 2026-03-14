@@ -4,9 +4,8 @@
 # https://opensource.org/licenses/MIT
 
 import struct
-from PIL import Image
-from header import KIF_SIGNATURE, Channels, Compression
-from rle import rle_encode
+from core.header import KIF_SIGNATURE, Compression
+from core.rle import rle_encode, rle_decode
 
 
 def stats(input_path: str):
@@ -24,7 +23,6 @@ def stats(input_path: str):
 
     # if RLE compressed, work with raw for stats
     if compression == Compression.RLE:
-        from rle import rle_decode
         raw_pixels = rle_decode(pixel_data, channels)
     else:
         raw_pixels = pixel_data

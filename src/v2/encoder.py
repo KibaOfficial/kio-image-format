@@ -5,9 +5,9 @@
 
 import struct
 from PIL import Image
-from header import KIF_SIGNATURE, Channels, Compression
+from core.header import KIF_SIGNATURE, Channels, Compression
 from chunk import write_chunk, CHUNK_HEAD, CHUNK_DATA, CHUNK_END, CHUNK_META
-from rle import rle_encode
+from core.rle import rle_encode
 
 
 # ============================================================
@@ -35,7 +35,7 @@ def pack_meta(metadata: dict) -> bytes:
 # ENCODER
 # ============================================================
 
-def encode_v2(
+def encode(
     input_path: str,
     output_path: str,
     compression: int = Compression.NONE,
