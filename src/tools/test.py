@@ -9,9 +9,9 @@ from v1.encoder import encode
 from v2.encoder import encode_v2
 from v1.decoder import decode
 from v2.decoder import decode_v2
-from info import info
-from stats import stats
-from compare import compare
+from tools.info import info
+from tools.stats import stats
+from tools.compare import compare
 from core.header import Compression
 
 # ============================================================
